@@ -454,7 +454,7 @@
   function selectQueue(progressMap, bank, mode, batchN) {
     batchN = batchN || 10;
     const prog = id => progressMap[id] || { seen: false, mastered: false };
-    const weak = bank.filter(q => { const p = prog(q.id); return p.seen && !p.mastered; }).map(q => q.id);
+    const weak = bank.filter(q => { const p = prog(q.id); return p.seen && !p.mastered && (p.wrongCount||0) > 0; }).map(q => q.id);
     const unseen = bank.filter(q => !prog(q.id).seen).map(q => q.id);
     if (mode === "weak") return weak;
     if (mode === "new") return unseen.slice(0, batchN);
