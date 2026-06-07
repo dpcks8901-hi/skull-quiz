@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ㅇ<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -6,7 +6,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>영상학 스컬 퀴즈</title>
+<title>🦴 영상학 스컬 퀴즈</title>
 <style>
   :root{--bg:#fff;--ink:#1a1a1a;--line:#e3e3e3;--accent:#2563eb;--ok:#16a34a;--no:#dc2626;--miss:#ea8a00;}
   *{box-sizing:border-box}
@@ -329,7 +329,7 @@
   <div class="bgoverlay"></div>
 </div>
 <div class="wrap">
-  <div class="row"><h1>⚔️ 스컬 던전 · 영상학 퀘스트</h1><button class="btn" onclick="show('home')">🏰 마을</button></div>
+  <div class="row"><h1>🦴 영상학 스컬 던전 · 검사 퀘스트</h1><button class="btn" onclick="show('home')">🏰 마을</button></div>
 
   <!-- HUD (게임 상태바) -->
   <div class="hud" id="hud">
@@ -338,8 +338,34 @@
     <div class="combo zero" id="hudCombo"><span class="flame">🔥</span><span id="hudComboN">0</span> 연속격파</div>
   </div>
 
+  <!-- PARTS (단원 선택) -->
+  <div id="parts">
+    <div class="card">
+      <div class="row"><b>🌊 스컬 군도 — 항해할 섬 선택</b><span class="muted" id="partsCount"></span></div>
+      <div class="muted" style="margin:6px 0">섬(단원)을 탭해 항로에 넣고 빼세요. 진도·탐험도는 고른 섬 기준으로 집계됩니다.</div>
+      <div id="partsGrid" style="margin-top:8px"></div>
+      <div style="margin-top:10px">
+        <button class="btn" onclick="toggleAllParts()">전체 선택/해제</button>
+        <button class="btn primary" onclick="confirmParts()">▶ 출진</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PICKER (문제 목록 골라 풀기) -->
+  <div id="picker" class="hidden">
+    <div class="card">
+      <div class="row"><b>📋 문제 목록</b><button class="btn" onclick="show('home')">← 마을로</button></div>
+      <div class="muted" style="margin:6px 0">선택한 섬의 문제입니다. 누르면 그 문제부터 풀이를 시작합니다. (⭐졸업 · ✓풀음 · ❌오답 · ·미풀이)</div>
+      <div id="pickerList"></div>
+    </div>
+  </div>
+
   <!-- HOME -->
   <div id="home">
+    <div class="card">
+      <div class="row"><b>🗂️ 현재 단원</b><button class="btn" onclick="show('parts')">단원 변경</button></div>
+      <div class="muted" id="homeParts" style="margin-top:4px"></div>
+    </div>
     <div class="card">
       <div class="row"><b>👹 미토벌 몬스터</b><span id="weakCount">0</span></div>
       <div class="bar" id="progBar"></div>
@@ -348,6 +374,9 @@
         <button class="btn primary" onclick="startMode('weak')">⚔️ 복수전 (약점 토벌)</button>
         <button class="btn" onclick="startMode('new')">🚪 새 던전 입장</button>
         <button class="btn" onclick="startMode('infinite')">♾️ 무한 회랑</button>
+        <button class="btn" onclick="startMode('review')">🔖 표식의 방 (<span id="reviewCount">0</span>)</button>
+        <button class="btn" onclick="startMode('all')">🔄 전체 복습 (처음부터)</button>
+        <button class="btn" onclick="show('picker')">📋 문제 목록 (골라 풀기)</button>
       </div>
     </div>
     <div class="card">
@@ -368,7 +397,10 @@
   <!-- QUIZ -->
   <div id="quiz" class="hidden">
     <div class="card">
-      <div class="muted"><span id="qExam"></span> · <span id="qPos"></span></div>
+      <div class="muted" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span><span id="qExam"></span> · <span id="qPos"></span></span>
+        <button id="reviewToggle" onclick="toggleReview()" style="background:none;border:1px solid var(--gold-dk);border-radius:8px;padding:4px 10px;cursor:pointer;color:inherit;font-size:13px;white-space:nowrap">🔖 표식</button>
+      </div>
       <p id="qText" style="font-size:17px;font-weight:600"></p>
       <div id="qOpts"></div>
       <button class="btn primary" id="submitBtn" onclick="submit()">🗡️ 공격!</button>
@@ -441,7 +473,7 @@
   function selectQueue(progressMap, bank, mode, batchN) {
     batchN = batchN || 10;
     const prog = id => progressMap[id] || { seen: false, mastered: false };
-    const weak = bank.filter(q => { const p = prog(q.id); return p.seen && !p.mastered && (p.wrongCount||0) > 0; }).map(q => q.id);
+    const weak = bank.filter(q => { const p = prog(q.id); return p.seen && (p.streak||0) === 0 && (p.wrongCount||0) > 0; }).map(q => q.id);
     const unseen = bank.filter(q => !prog(q.id).seen).map(q => q.id);
     if (mode === "weak") return weak;
     if (mode === "new") return unseen.slice(0, batchN);
@@ -1197,727 +1229,727 @@ const REGISTRY = [
   {
     "id": "PNS-ANA-01",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "부비동 = 공기 함유 강, frontal·ethmoid·sphenoid(머리뼈) + maxillary(얼굴뼈). = paranasal(accessory nasal) sinuses"
   },
   {
     "id": "PNS-ANA-02",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Frontal sinuses — paired, pyramidal, vertical plate of frontal bone의 tables 사이"
   },
   {
     "id": "PNS-ANA-03",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Ethmoid sinuses(two) — 별칭 ethmoid capsules/labyrinths, 다수의 cell, lateral masses of ethmoid에 위치"
   },
   {
     "id": "PNS-ANA-04",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Sphenoid sinuses — paired, body of sphenoid 차지, usually asymmetrical"
   },
   {
     "id": "PNS-ANA-05",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Maxillary sinuses — 별칭 antra of Highmore(영국 해부학자), paired, pyramidal"
   },
   {
     "id": "PNS-ANA-06",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "frontal·maxillary=pyramidal / sphenoid=asymmetrical / ethmoid=labyrinth(capsule)"
   },
   {
     "id": "PNS-ANA-07",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "배출구(meatus) 빈출 — Maxillary→middle / Frontal→middle / Ethmoid ant.→middle, pos.→superior / Sphenoid→s"
   },
   {
     "id": "PNS-ANA-08",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "middle로: maxillary·frontal·ethmoid(ant) / superior로: sphenoid·ethmoid(pos)"
   },
   {
     "id": "PNS-ANA-09",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "촬영원칙  — Routine PNS는 erect(직립). 근거(Cross and Flecker): fluid 유무 확인 + fluid와 다른 병변 그림자 감별 → air-fluid"
   },
   {
     "id": "PNS-ANA-10",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Routine projection(erect) = Lateral / Caldwell / Waters 3종. sphenoid는 special(open-mouth Waters / SM"
   },
   {
     "id": "PNS-ANA-11",
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "label": "소견 — Sinusitis(frontal/ethmoid/sphenoid/maxillary), inflammation, obstructed opening, fluid(air-flui"
   },
   {
     "id": "PNS-LAT-01",
     "exam": "PNS-LAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "PP — vertical grid 앞 좌위 true lateral. IP 중심 = outer canthus 1 inch posterior(바깥눈구석 1인치 뒤)"
   },
   {
     "id": "PNS-LAT-02",
     "exam": "PNS-LAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "line — MSP ∥ IP, IPL ⊥ IP, IOML ⊥ front edge of IP"
   },
   {
     "id": "PNS-LAT-03",
     "exam": "PNS-LAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "CR — IP midpoint에 수직, 입사 = outer canthus 1 inch posterior, film 반대측 입사. 수술 전 계측엔 정확한 lateral만"
   },
   {
     "id": "PNS-LAT-04",
     "exam": "PNS-LAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "SS — PNS의 AP·SI 치수, frontal bone outer table 두께. 모든 부비동 한 영상(frontal/ethmoid/sphenoid/maxillary) + s"
   },
   {
     "id": "PNS-LAT-05",
     "exam": "PNS-LAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "계측용 lateral은 72 inch SID (확대·왜곡 최소)"
   },
   {
     "id": "PNS-LAT-06",
     "exam": "PNS-LAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "IP중심 식별 — PNS Lateral=outer canthus 뒤 1inch / Waters=acanthion / Caldwell=nasion"
   },
   {
     "id": "PNS-CAL-01",
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Modified Caldwell = CR 15° caudad to the OML / Original Caldwell = CR이 GML과 23° 각"
   },
   {
     "id": "PNS-CAL-02",
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "label": "PP — prone/seated erect, nasion을 cassette 중심, 이마·코 댐, MSP ⊥ IP, OML ⊥ IP"
   },
   {
     "id": "PNS-CAL-03",
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "label": "CR — nasion에 OML 기준 15° caudal(modified)"
   },
   {
     "id": "PNS-CAL-04",
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "label": "SS — frontal sinuses, frontonasal suture, anterior ethmoid cells, nasal fossae, sphenoid·ethmoid sin"
   },
   {
     "id": "PNS-CAL-05",
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "label": "영상 — petrous ridge가 orbit 하부(15°일 때 안와 아래 1/3)에 투영"
   },
   {
     "id": "PNS-CAL-06",
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Caldwell은 PA, CR caudad. 15°(OML) vs 23°(GML) 핵심 함정. (얼굴뼈 Caldwell은 범위 제외; PNS Caldwell만 포함.)"
   },
   {
     "id": "PNS-WAT-01",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "목적(aim)  — extend head just enough, dense petrosae를 antral floors 바로 아래(immediately below)"
   },
   {
     "id": "PNS-WAT-02",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "너무 덜 듦(too little) → petrosal shadows가 antra의 lower position 투영, 병변 가림. 너무 많이 듦(too much) → antral s"
   },
   {
     "id": "PNS-WAT-03",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "nose는 IP에서 0.5~1.5 cm 떨어짐"
   },
   {
     "id": "PNS-WAT-04",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "OML을 IP면과 37° 각(인용 Mahoney)"
   },
   {
     "id": "PNS-WAT-05",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "PP — PA/seated erect(erect 선호), 턱끝(extended chin) 댐, MML(mentomeatal line) ⊥ IP, MSP ⊥ IP, IP 중심 = a"
   },
   {
     "id": "PNS-WAT-06",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "CR  — IP midpoint에 수직(perpendicular), vertex 입사 → acanthion 출사"
   },
   {
     "id": "PNS-WAT-07",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "SS — petrous pyramids가 antral floor 아래. frontal·ethmoid sinuses = distorted(왜곡) / sphenoid sinuses ="
   },
   {
     "id": "PNS-WAT-08",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "병변 — Blow-out fracture: 상악동 침범(invasion)"
   },
   {
     "id": "PNS-WAT-09",
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Waters=OML 37°(Mahoney), MML⊥, CR 수직, 중심 acanthion. 얼굴뼈 Waters(범위 제외)·Modified Waters(55°, 제외)와 별개"
   },
   {
     "id": "PNS-OMW-01",
     "exam": "PNS-OMW",
-    "part": "S9",
+    "part": "SINUS",
     "label": "별칭 — Pirie method / Open mouth Waters"
   },
   {
     "id": "PNS-OMW-02",
     "exam": "PNS-OMW",
-    "part": "S9",
+    "part": "SINUS",
     "label": "PP — prone/seated erect, 코·턱 댐, 입을 크게 벌려 IP 중심, OML 37°(Waters 동일), MML ⊥ IP, MSP ⊥ IP, IP 중심 = acan"
   },
   {
     "id": "PNS-OMW-03",
     "exam": "PNS-OMW",
-    "part": "S9",
+    "part": "SINUS",
     "label": "CR — IP midpoint에 수직(각도 안 줌, OML 37°는 자세각)"
   },
   {
     "id": "PNS-OMW-04",
     "exam": "PNS-OMW",
-    "part": "S9",
+    "part": "SINUS",
     "label": "SS  — sphenoid sinuses가 벌린 입(open mouth)을 통해 투영 (Waters에서 안 보이던 것). + antra·nasal fossae"
   },
   {
     "id": "PNS-OMW-05",
     "exam": "PNS-OMW",
-    "part": "S9",
+    "part": "SINUS",
     "label": "sphenoid 보는 두 방법 = open-mouth Waters / SMV. 입 벌림 부족 시 sphenoid 안 보임"
   },
   {
     "id": "PNS-SMV-01",
     "exam": "PNS-SMV",
-    "part": "S9",
+    "part": "SINUS",
     "label": "별칭 — Schuller method / Basilar position"
   },
   {
     "id": "PNS-SMV-02",
     "exam": "PNS-SMV",
-    "part": "S9",
+    "part": "SINUS",
     "label": "성공조건 2  — (1) IOML을 IP면에 가능한 한 평행(as nearly as possible parallel), (2) CR을 IOML에 수직"
   },
   {
     "id": "PNS-SMV-03",
     "exam": "PNS-SMV",
-    "part": "S9",
+    "part": "SINUS",
     "label": "PP — supine/seated erect(short neck·hypersthenic은 erect). 흉부 올려 vertex 닿게, 목 complete extension, 무릎"
   },
   {
     "id": "PNS-SMV-04",
     "exam": "PNS-SMV",
-    "part": "S9",
+    "part": "SINUS",
     "label": "CR — sella turcica 통과, IOML에 수직. throat MSP·하악각 사이 입사 → EAM ¾ inch(≈2cm) 앞 통과"
   },
   {
     "id": "PNS-SMV-05",
     "exam": "PNS-SMV",
-    "part": "S9",
+    "part": "SINUS",
     "label": "SS(대칭) — petrosae, mastoid processes, eustachian tube 골부, foramina ovale·spinosum, carotid canals, s"
   },
   {
     "id": "PNS-SMV-06",
     "exam": "PNS-SMV",
-    "part": "S9",
+    "part": "SINUS",
     "label": "Schuller 두 종류: ① SMV/basilar(여기, CR⊥IOML, 두개저) ② 측두골 axiolateral(§TMP-HSL, 25° caudal). 완전 다른 검사.  스"
   },
   {
     "id": "TMP-ANA-01",
     "exam": "TMP-ANA",
-    "part": "S9",
+    "part": "TEMP",
     "label": "측두골 3부분  — (1) Squamous, (2) Mastoid, (3) Petrous(petrous pyramid/pars petrosa) + Petrous ridge, Mas"
   },
   {
     "id": "TMP-ANA-02",
     "exam": "TMP-ANA",
-    "part": "S9",
+    "part": "TEMP",
     "label": "귀 — External(auricle/pinna, EAM) / Middle(tympanic membrane, 3 ossicles, eustachian tube) / Internal"
   },
   {
     "id": "TMP-ANA-03",
     "exam": "TMP-ANA",
-    "part": "S9",
+    "part": "TEMP",
     "label": "mastoid cell 얇은 벽 선명도 4조건  — (1) effective focal spot ≤ 1 mm, (2) high resolution intensifying scree"
   },
   {
     "id": "TMP-ANA-04",
     "exam": "TMP-ANA",
-    "part": "S9",
+    "part": "TEMP",
     "label": "mastoid antrum 별칭 — tympanic antrum / antrum mastoideum / Valsalva's antrum(petrous portion의 air spa"
   },
   {
     "id": "TMP-LAW-01",
     "exam": "TMP-LAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "double-tube angulation, non-grid technique"
   },
   {
     "id": "TMP-LAW-02",
     "exam": "TMP-LAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "PP — prone/좌위, 각 mastoid에 EAM 직후방(directly posterior) 1 inch 표시, 각 auricle 앞으로 접어 테이프(auricle forwar"
   },
   {
     "id": "TMP-LAW-03",
     "exam": "TMP-LAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "CR  — 15° caudad AND 15° anterior(두 방향 동시), non-grid cassette midpoint. 입사 = uppermost EAM에서 2 inch"
   },
   {
     "id": "TMP-LAW-04",
     "exam": "TMP-LAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — axiolateral oblique, IOML parallel(Modified Law SS 참조)"
   },
   {
     "id": "TMP-LAW-05",
     "exam": "TMP-LAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "Law(double, 15° caudad+15° anterior, 2인치 post) ↔ Modified Law(single, MSP 15° 회전+15° caudad만, 1인치 po"
   },
   {
     "id": "TMP-MLAW-01",
     "exam": "TMP-MLAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "single-tube angulation"
   },
   {
     "id": "TMP-MLAW-02",
     "exam": "TMP-MLAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "PP — mastoid에 EAM 직후방 1inch 표시, auricle forward, lateral. MSP를 true lateral에서 IP쪽으로 15° 회전 (Law과 결정적"
   },
   {
     "id": "TMP-MLAW-03",
     "exam": "TMP-MLAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "CR  — IP midpoint에 15° caudad(anterior 각 없음). 입사 = uppermost EAM에서 1 inch posterior + 2 inch superio"
   },
   {
     "id": "TMP-MLAW-04",
     "exam": "TMP-MLAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — mastoid air cells, sigmoid sinus, lateral position of pars petrosa, tegmen tympani, superimpose"
   },
   {
     "id": "TMP-MLAW-05",
     "exam": "TMP-MLAW",
-    "part": "S9",
+    "part": "TEMP",
     "label": "MSP 15° 회전이 Zygo Oblique(§ZOBL, CR⊥IOML)·TMJ modified Law(§TMJ-ML, CR 15° caudad·EAM 전방 ½inch)와 혼동"
   },
   {
     "id": "TMP-HSL-01",
     "exam": "TMP-HSL",
-    "part": "S9",
+    "part": "TEMP",
     "label": "같은 자세, CR caudal 각도만 다름(dependent EAM 통과)  — Henschen 15° / Schuller 25° / Lysholm 35°(=Runstrom II)"
   },
   {
     "id": "TMP-HSL-02",
     "exam": "TMP-HSL",
-    "part": "S9",
+    "part": "TEMP",
     "label": "PP — prone/좌위, 각 mastoid에 auricle와 head junction, EAM 바로 뒤 표시, lateral. MSP ∥ IP, IPL ⊥ IP, IOML ∥ t"
   },
   {
     "id": "TMP-HSL-03",
     "exam": "TMP-HSL",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — Henschen: mastoid cells·antrum·IAM·EAM·tegmen tympani / Schuller: pneumatic structure of mastoi"
   },
   {
     "id": "TMP-HSL-04",
     "exam": "TMP-HSL",
-    "part": "S9",
+    "part": "TEMP",
     "label": "여기 Schuller(25° axiolateral) ≠ SMV Schuller(§PNS-SMV/§SMV2). 15/25/35 = Henschen/Schuller/Lysholm"
   },
   {
     "id": "TMP-STEN-01",
     "exam": "TMP-STEN",
-    "part": "S9",
+    "part": "TEMP",
     "label": "PP — prone/좌위(PA계열). 각 뺨에 EAM 직전방(anterior) 1 inch 표시, 이마·코·zygoma 댐. IOML ∥ transverse axis of IP,"
   },
   {
     "id": "TMP-STEN-02",
     "exam": "TMP-STEN",
-    "part": "S9",
+    "part": "TEMP",
     "label": "MSP가 IP면과 45° 각"
   },
   {
     "id": "TMP-STEN-03",
     "exam": "TMP-STEN",
-    "part": "S9",
+    "part": "TEMP",
     "label": "CR  — 12° cephalad(머리쪽)"
   },
   {
     "id": "TMP-STEN-04",
     "exam": "TMP-STEN",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — petrous ridge, mastoid process 세포구조·antrum, tympanic cavity, bony labyrinth, IAC, petrous apex"
   },
   {
     "id": "TMP-STEN-05",
     "exam": "TMP-STEN",
-    "part": "S9",
+    "part": "TEMP",
     "label": "Stenvers = MSP 45°, CR 12° cephalad, PA(prone), IOML ∥. 반대 = Arcelin"
   },
   {
     "id": "TMP-ARC-01",
     "exam": "TMP-ARC",
-    "part": "S9",
+    "part": "TEMP",
     "label": "PP — supine/좌위(children·prone 불가에 유용). 각 뺨에 EAM 직전방 1inch 표시. 머리를 검사측 반대로 약 45° 회전"
   },
   {
     "id": "TMP-ARC-02",
     "exam": "TMP-ARC",
-    "part": "S9",
+    "part": "TEMP",
     "label": "IOML ⊥ IP (Stenvers는 IOML ∥ — 차이), MSP가 IP면과 45° 각"
   },
   {
     "id": "TMP-ARC-03",
     "exam": "TMP-ARC",
-    "part": "S9",
+    "part": "TEMP",
     "label": "CR  — 10° caudad(Stenvers 12° cephalad의 역). 입사 = 뺨, 국소화점 ¾inch 위"
   },
   {
     "id": "TMP-ARC-04",
     "exam": "TMP-ARC",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — Stenvers와 동일(petrous apex·bony labyrinth·IAC), AP로 표현"
   },
   {
     "id": "TMP-ARC-05",
     "exam": "TMP-ARC",
-    "part": "S9",
+    "part": "TEMP",
     "label": "Stenvers(PA, 12° cephalad, IOML ∥) ↔ Arcelin(AP/supine, 10° caudad, IOML ⊥, 45° 회전). MSP 45° 공통"
   },
   {
     "id": "TMP-TOWNE-01",
     "exam": "TMP-TOWNE",
-    "part": "S9",
+    "part": "TEMP",
     "label": "PP — supine/seated erect, 어깨 같은 횡면, MSP ⊥ IP midline, OML ⊥ IP. 굴곡 부족 시 IOML ⊥ + CR 7° 증가(30°→37°)"
   },
   {
     "id": "TMP-TOWNE-02",
     "exam": "TMP-TOWNE",
-    "part": "S9",
+    "part": "TEMP",
     "label": "CR  — MSP×EAM선 교차점에 OML 기준 30° caudad 또는 IOML 기준 37° caudad"
   },
   {
     "id": "TMP-TOWNE-03",
     "exam": "TMP-TOWNE",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — IAC, labyrinth, mastoid antrums, middle ear, dorsum sellae . (라벨: foramen magnum, dorsum sellae"
   },
   {
     "id": "TMP-TOWNE-04",
     "exam": "TMP-TOWNE",
-    "part": "S9",
+    "part": "TEMP",
     "label": "측두골 Towne SS=IAC/labyrinth 강조 ↔ 두개골 Towne(§TOWNE2) SS=foramen magnum/dorsum sellae. 각도(30/37)는 동일"
   },
   {
     "id": "TMP-HAAS-01",
     "exam": "TMP-HAAS",
-    "part": "S9",
+    "part": "TEMP",
     "label": "별칭 — reverse Towne의 PA판. PP — prone/seated, 이마·코 댐, MSP·OML 모두 ⊥ IP, IP 중심 = nasion 위 1 inch superio"
   },
   {
     "id": "TMP-HAAS-02",
     "exam": "TMP-HAAS",
-    "part": "S9",
+    "part": "TEMP",
     "label": "CR  — nasion 통과, 25° cephalad"
   },
   {
     "id": "TMP-HAAS-03",
     "exam": "TMP-HAAS",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — IAC, labyrinth, mastoid antrums, middle ear, dorsum sellae(Towne과 동일 구조, PA로)"
   },
   {
     "id": "TMP-HAAS-04",
     "exam": "TMP-HAAS",
-    "part": "S9",
+    "part": "TEMP",
     "label": "측두골 Haas 중심=nasion 위 1inch ↔ 두개골 Haas(§HAAS2) 입사 inion 아래 4cm·출사 nasion 위 4cm. 둘 다 PA·25° cephalad"
   },
   {
     "id": "TMP-MAYER-01",
     "exam": "TMP-MAYER",
-    "part": "S9",
+    "part": "TEMP",
     "label": "CR  — dependent EAM 통과, 45° caudad. (head 회전 + 45°.)"
   },
   {
     "id": "TMP-MAYER-02",
     "exam": "TMP-MAYER",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — EAM, tympanic cavity·ossicles, mastoid antrum, auditus, mastoid air cells (ossicles·auditus 강조)"
   },
   {
     "id": "TMP-MAYER-03",
     "exam": "TMP-MAYER",
-    "part": "S9",
+    "part": "TEMP",
     "label": "Mayer 45° caudad ↔ Schuller 25° / Lysholm 35° / Henschen 15°"
   },
   {
     "id": "TMP-TORB-01",
     "exam": "TMP-TORB",
-    "part": "S9",
+    "part": "TEMP",
     "label": "CR  — nasion에 5° cephalad 또는 caudad(작은 각)"
   },
   {
     "id": "TMP-TORB-02",
     "exam": "TMP-TORB",
-    "part": "S9",
+    "part": "TEMP",
     "label": "SS — internal auditory canal(IAC) 단독 (안와를 통해 IAC 투영)"
   },
   {
     "id": "TMP-TORB-03",
     "exam": "TMP-TORB",
-    "part": "S9",
+    "part": "TEMP",
     "label": "transorbital = CR 5°. (Mayer 45°와 비교.)"
   },
   {
     "id": "TMP-STY-01",
     "exam": "TMP-STY",
-    "part": "S9",
+    "part": "TEMP",
     "label": "Fuchs method(modified) — acanthion, caudal 13°, open mouth, PA"
   },
   {
     "id": "TMP-STY-02",
     "exam": "TMP-STY",
-    "part": "S9",
+    "part": "TEMP",
     "label": "Cahoon method — nasion, cephalad 25°, PA oblique"
   },
   {
     "id": "TMP-STY-03",
     "exam": "TMP-STY",
-    "part": "S9",
+    "part": "TEMP",
     "label": "Wigby-Taylor method — cephalad 8°, open mouth"
   },
   {
     "id": "TMP-HYP-01",
     "exam": "TMP-HYP",
-    "part": "S9",
+    "part": "TEMP",
     "label": "Hypoglossal canal — Miller method — upside 45° oblique, caudal 12°, AP oblique"
   },
   {
     "id": "TMP-STY-04",
     "exam": "TMP-STY",
-    "part": "S9",
+    "part": "TEMP",
     "label": "붓돌기 3법(Fuchs 13°/Cahoon 25°/Wigby-Taylor 8°) + Miller 12°. open mouth = Fuchs·Wigby-Taylor / Cahoon은"
   },
   {
     "id": "PNS-FUN-01",
     "exam": "PNS-FUN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "공기 온도·습도 조절 → 체온과 비슷하게 맞춰 폐 가스교환 효율↑"
   },
   {
     "id": "PNS-FUN-02",
     "exam": "PNS-FUN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "목소리 공명(resonance) → 얼굴 내 공간 울림, 개인별 음색 차이"
   },
   {
     "id": "PNS-FUN-03",
     "exam": "PNS-FUN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "두개골 무게 경감 + 충격 완충(속이 비어 가벼움)"
   },
   {
     "id": "PNS-FUN-04",
     "exam": "PNS-FUN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "점액 분비 → 면역·세균 배출(알레르기·감기 시 이물질 배출)"
   },
   {
     "id": "PNS-CLIN-01",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "염증 발생 빈도  — Maxillary(최다) > Ethmoid > Frontal·Sphenoid(적음). Maxillary=코와 가깝고 위쪽(middle meatus) 개구라 농"
   },
   {
     "id": "PNS-CLIN-02",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "치료 — 세균성→항생제, 바이러스성→항히스타민+스프레이, 수술→내시경으로 코 안 진입·염증 제거·좁아진 관 확장"
   },
   {
     "id": "PNS-CLIN-03",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "임상 트렌드  — 예전엔 PNS 세트(Lateral+Caldwell+Waters) 루틴 / 현재는 Waters view 단독 오더가 대부분(Maxillary 염증 최다 + Wate"
   },
   {
     "id": "PNS-CLIN-04",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "Waters 각 sinus 관찰 — Maxillary 최적 / Frontal·Ethmoid 왜곡·단축(distortion) / Sphenoid ❌미관찰. (→ sphenoid는 P"
   },
   {
     "id": "PNS-CLIN-05",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "Foramen rotundum이 Waters view에서 보임 ⭐시험 단골.  §PNS-WAT-07"
   },
   {
     "id": "PNS-CLIN-06",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "Blow-out fracture — orbital floor가 약해 maxillary sinus 쪽으로 함몰, 피가 sinus로 흘러 air-fluid level 동반. Water"
   },
   {
     "id": "PNS-CLIN-07",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "Open-mouth Waters 임상 선호 이유 2가지  — (1) sphenoid sinus 동시 관찰, (2) 입 벌리면 petrous pyramid가 더 내려가 maxilla"
   },
   {
     "id": "PNS-CLIN-08",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "Caldwell은 Cone(콘) 사용으로 부비동 부위만 — Skull PA(두개골 전체)와 촬영법 동일(CR 15° caudad, OML⊥)하나 조사범위 차이.  §SPA-09,"
   },
   {
     "id": "PNS-CLIN-09",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "Cross & Flecker, Erect 권장 2이유  — (1) air-fluid level 형성(누우면 중력방향 달라 안 생김), (2) 병변 유동성(mobility) 감별(자"
   },
   {
     "id": "PNS-CLIN-10",
     "exam": "PNS-CLIN",
-    "part": "S9N",
+    "part": "SINUS",
     "label": "Waters 재촬영 기준 — petrous가 maxillary와 겹치면 재촬영(너무 숙임, 각>37/53°). 너무 들면 maxillary 왜곡·단축.  §PNS-WAT-02"
   },
   {
     "id": "EAR-01",
     "exam": "EAR",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "청각 경로  — 소리→고막(tympanic membrane) 진동→귓속뼈 3개 Malleus(망치)→Incus(모루)→Stapes(등자) 증폭→Cochlea(달팽이관) 섬모 진동→"
   },
   {
     "id": "EAR-02",
     "exam": "EAR",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "달팽이관·귓속뼈·CN VIII 모두 Petrous pyramid(추체) 안에 위치. 신경 통로 = IAC(internal acoustic canal, 내이도)"
   },
   {
     "id": "EAR-03",
     "exam": "EAR",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "평형감각  — Semicircular canal(반고리관)=림프액 이동→회전 감각 / Otolith(이석)=중력·수직·위아래 움직임. 둘 다 CN VIII로 전달"
   },
   {
     "id": "EAR-04",
     "exam": "EAR",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "소이골은 일반 X선 분별 불가 → Temporal CT 필요(1mm 이하 thin slice, 공기·혈액·뼈·염증 window 자유 조절)"
   },
   {
     "id": "EAR-05",
     "exam": "EAR",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Mastoid air cell 기능 — Middle ear(중이)와 연결, 기압 조절 + 염증 배출 통로(중이 염증→mastoid로 파급)"
   },
   {
     "id": "EAR-06",
     "exam": "EAR",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Eustachian tube  — 이탈리아 해부학자 Eustachi 이름. Middle ear ↔ Nasopharynx(코인두) 연결, 기압 조절+염증 배출. 하품 시 귀 먹먹=기"
   },
   {
     "id": "TMP-CLIN-01",
     "exam": "TMP-CLIN",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Temporal SID = 100cm 정확 (확대·왜곡 최소).  §TMP-ANA-03(소초점≤1mm·고해상도·최소조사야·호흡정지)"
   },
   {
     "id": "TMP-CLIN-02",
     "exam": "TMP-CLIN",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "CT 개발 이후 plain X-ray temporal은 임상 거의 미사용, 그래도 국시·이론 출제. 어지럼 진료흐름: 신경과(머리CT)→MRI→신경외과(뇌혈관CT)→이비인후과→Te"
   },
   {
     "id": "TMP-CLIN-03",
     "exam": "TMP-CLIN",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Eagle's syndrome — styloid process(붓돌기)가 비정상적으로 길어져 목 통증 유발 → 길이 측정 위해 styloid 촬영법 개발.  §TMP-STY"
   },
   {
     "id": "TMP-CLIN-04",
     "exam": "TMP-CLIN",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Mastoid antrum 별칭 = Valsalva's antrum(+tympanic antrum/antrum mastoideum), petrous 안 air space.  §TM"
   },
   {
     "id": "TMP-CLIN-05",
     "exam": "TMP-CLIN",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Tegmen tympani = 고실(tympanic cavity) 지붕(상부 천장) — Henschen·Schuller·Lysholm 공통 관찰.  §TMP-HSL-03"
   },
   {
     "id": "TMP-CLIN-06",
     "exam": "TMP-CLIN",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Modified Law = TM joint 촬영법과 동일 원리, center만 다름(측두골 Modified Law = EAM 뒤 1인치 마크 / TMJ = EAM 전방 ½인치)"
   },
   {
     "id": "EXAM-01",
     "exam": "EXAM",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "기말 범위 = PNS + Temporal Bone 전체 포함(중간 범위까지 포함해 통합 출제 언급). 일부 극단자세는 제외 예정이라 구두 언급했으나 ASR 불명확 → 사용자 범위가"
   },
   {
     "id": "EXAM-02",
     "exam": "EXAM",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Henschen/Schuller/Lysholm 출제방식  — \"Temporal bone을 보기 위한 True lateral 촬영법이 아닌 것은?\" 식. 세 명칭 식별이 핵심, 세부"
   },
   {
     "id": "EXAM-03",
     "exam": "EXAM",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Styloid 3법(Fuchs·Cahoon·Wigby-Taylor) — 이름 식별만, 세부 각도 출제 적음.  §TMP-STY"
   },
   {
     "id": "EXAM-04",
     "exam": "EXAM",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "Foramen rotundum = Waters ⭐단골.  §PNS-CLIN-05"
   },
   {
     "id": "EXAM-05",
     "exam": "EXAM",
-    "part": "S9N",
+    "part": "TEMP",
     "label": "center 수치는 암기보다 해부 위치 이해로 도출 — Skull Lat=EAM 위 5cm / PNS Lat=outer canthus 뒤 1inch / Sella=EAM 위 2cm"
   }
 ];
@@ -2858,7 +2890,7 @@ const BANK = [
       "PNS-ANA-05"
     ],
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동의 소속 뼈·별칭으로 옳은 것을 고르시오.",
     "options": [
       "① Frontal·Ethmoid·Sphenoid은 머리뼈, Maxillary는 얼굴뼈에 속한다",
@@ -2883,7 +2915,7 @@ const BANK = [
       "PNS-ANA-06"
     ],
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동의 형태·대칭성으로 옳은 것을 고르시오.",
     "options": [
       "① Frontal sinus = paired, pyramidal",
@@ -2911,7 +2943,7 @@ const BANK = [
       "PNS-ANA-08"
     ],
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 배출구(meatus) 연결로 옳은 것을 고르시오.",
     "options": [
       "① Maxillary → middle meatus",
@@ -2940,7 +2972,7 @@ const BANK = [
       "PNS-ANA-11"
     ],
     "exam": "PNS-ANA",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 촬영 원칙·routine으로 옳은 것을 고르시오.",
     "options": [
       "① Routine PNS는 erect(직립)로 촬영한다",
@@ -2967,7 +2999,7 @@ const BANK = [
       "PNS-CAL-03"
     ],
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "question": "PA axial Caldwell method의 CR 각도로 옳은 것을 고르시오.",
     "options": [
       "① Modified Caldwell = CR 15° caudad to the OML",
@@ -2993,7 +3025,7 @@ const BANK = [
       "PNS-CAL-05"
     ],
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "question": "Caldwell method의 자세·묘출로 옳은 것을 고르시오.",
     "options": [
       "① nasion을 cassette 중심에 둔다",
@@ -3019,7 +3051,7 @@ const BANK = [
       "PNS-CAL-06"
     ],
     "exam": "PNS-CAL",
-    "part": "S9",
+    "part": "SINUS",
     "question": "PNS Caldwell method의 방향·CR 핵심 식별로 옳은 것을 고르시오.",
     "options": [
       "① PA 방향이며 CR을 caudad로 준다",
@@ -3043,7 +3075,7 @@ const BANK = [
       "PNS-LAT-06"
     ],
     "exam": "PNS-LAT",
-    "part": "S9",
+    "part": "SINUS",
     "question": "PNS Lateral의 자세선·중심 식별로 옳은 것을 고르시오.",
     "options": [
       "① MSP를 IP에 평행하게 둔다",
@@ -3071,7 +3103,7 @@ const BANK = [
       "PNS-LAT-05"
     ],
     "exam": "PNS-LAT",
-    "part": "S9",
+    "part": "SINUS",
     "question": "PNS Lateral의 묘출·SID로 옳은 것을 고르시오.",
     "options": [
       "① 모든 부비동(frontal/ethmoid/sphenoid/maxillary)을 한 영상에 + sella turcica",
@@ -3098,7 +3130,7 @@ const BANK = [
       "PNS-OMW-04"
     ],
     "exam": "PNS-OMW",
-    "part": "S9",
+    "part": "SINUS",
     "question": "Open-mouth Waters(부비동)의 별칭·묘출로 옳은 것을 고르시오.",
     "options": [
       "① 별칭 = Pirie method",
@@ -3125,7 +3157,7 @@ const BANK = [
       "PNS-OMW-05"
     ],
     "exam": "PNS-OMW",
-    "part": "S9",
+    "part": "SINUS",
     "question": "Open-mouth Waters의 자세·CR로 옳은 것을 고르시오.",
     "options": [
       "① OML을 IP면과 37°(Waters 동일)로 둔다",
@@ -3152,7 +3184,7 @@ const BANK = [
       "PNS-SMV-06"
     ],
     "exam": "PNS-SMV",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 SMV의 별칭·변별로 옳은 것을 고르시오.",
     "options": [
       "① 별칭 = Schuller method / Basilar position",
@@ -3179,7 +3211,7 @@ const BANK = [
       "PNS-SMV-05"
     ],
     "exam": "PNS-SMV",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 SMV의 CR·입사·묘출로 옳은 것을 고르시오.",
     "options": [
       "① CR이 sella turcica를 통과하고 IOML에 수직이다",
@@ -3207,7 +3239,7 @@ const BANK = [
       "PNS-WAT-06"
     ],
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 Waters method의 자세각·중심·CR로 옳은 것을 고르시오.",
     "options": [
       "① OML을 IP면과 37° 각(Mahoney)으로 둔다",
@@ -3234,7 +3266,7 @@ const BANK = [
       "PNS-WAT-02"
     ],
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "question": "Waters method에서 고개 신전(extension) 정도로 옳은 것을 고르시오.",
     "options": [
       "① dense petrosae를 antral floor 바로 아래 둘 만큼만 신전한다",
@@ -3260,7 +3292,7 @@ const BANK = [
       "PNS-WAT-03"
     ],
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "question": "Waters view의 묘출 소견·코 위치로 옳은 것을 고르시오.",
     "options": [
       "① frontal·ethmoid sinus는 distorted(왜곡)된다",
@@ -3286,7 +3318,7 @@ const BANK = [
       "PNS-WAT-09"
     ],
     "exam": "PNS-WAT",
-    "part": "S9",
+    "part": "SINUS",
     "question": "Waters view의 병변·검사 식별로 옳은 것을 고르시오.",
     "options": [
       "① Blow-out fracture에서 maxillary sinus 침범을 평가한다",
@@ -3311,7 +3343,7 @@ const BANK = [
       "TMP-ANA-02"
     ],
     "exam": "TMP-ANA",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 해부로 옳은 것을 고르시오.",
     "options": [
       "① 측두골 3부분 = Squamous·Mastoid·Petrous",
@@ -3336,7 +3368,7 @@ const BANK = [
       "TMP-ANA-03"
     ],
     "exam": "TMP-ANA",
-    "part": "S9",
+    "part": "TEMP",
     "question": "mastoid cell의 얇은 벽 선명도 확보 4조건에 해당하는 것을 고르시오.",
     "options": [
       "① effective focal spot ≤ 1 mm",
@@ -3362,7 +3394,7 @@ const BANK = [
       "TMP-ANA-04"
     ],
     "exam": "TMP-ANA",
-    "part": "S9",
+    "part": "TEMP",
     "question": "Mastoid antrum의 별칭으로 옳은 것을 고르시오.",
     "options": [
       "① tympanic antrum / antrum mastoideum / Valsalva's antrum",
@@ -3386,7 +3418,7 @@ const BANK = [
       "TMP-LAW-03"
     ],
     "exam": "TMP-LAW",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Law method(axiolateral)의 기법·CR로 옳은 것을 고르시오.",
     "options": [
       "① double-tube angulation, non-grid technique",
@@ -3415,7 +3447,7 @@ const BANK = [
       "TMP-LAW-05"
     ],
     "exam": "TMP-LAW",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Law method의 자세·입사점·변별로 옳은 것을 고르시오.",
     "options": [
       "① 각 auricle을 앞으로 접어 테이프(auricle forward)한다",
@@ -3443,7 +3475,7 @@ const BANK = [
       "TMP-MLAW-03"
     ],
     "exam": "TMP-MLAW",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Modified Law method의 기법·자세·CR로 옳은 것을 고르시오.",
     "options": [
       "① single-tube angulation이다",
@@ -3471,7 +3503,7 @@ const BANK = [
       "TMP-MLAW-05"
     ],
     "exam": "TMP-MLAW",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Modified Law의 입사점·묘출·변별로 옳은 것을 고르시오.",
     "options": [
       "① 입사 = uppermost EAM에서 1 inch posterior + 2 inch superior",
@@ -3497,7 +3529,7 @@ const BANK = [
       "TMP-HSL-04"
     ],
     "exam": "TMP-HSL",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 axiolateral 3종(Henschen/Schuller/Lysholm)의 CR로 옳은 것을 고르시오.",
     "options": [
       "① 같은 자세에서 CR caudal 각만 다르다 — Henschen 15°/Schuller 25°/Lysholm 35°",
@@ -3523,7 +3555,7 @@ const BANK = [
       "TMP-HSL-03"
     ],
     "exam": "TMP-HSL",
-    "part": "S9",
+    "part": "TEMP",
     "question": "Henschen/Schuller/Lysholm의 자세·묘출로 옳은 것을 고르시오.",
     "options": [
       "① MSP∥IP, IPL⊥IP, IOML∥transverse axis",
@@ -3550,7 +3582,7 @@ const BANK = [
       "TMP-STEN-03"
     ],
     "exam": "TMP-STEN",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Stenvers method의 자세·CR로 옳은 것을 고르시오.",
     "options": [
       "① PA계열(prone)이며 IOML을 IP transverse axis에 평행",
@@ -3577,7 +3609,7 @@ const BANK = [
       "TMP-STEN-05"
     ],
     "exam": "TMP-STEN",
-    "part": "S9",
+    "part": "TEMP",
     "question": "Stenvers method의 묘출·변별로 옳은 것을 고르시오.",
     "options": [
       "① petrous apex 세포구조·bony labyrinth·IAC가 잘 보인다",
@@ -3604,7 +3636,7 @@ const BANK = [
       "TMP-ARC-03"
     ],
     "exam": "TMP-ARC",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Arcelin method(Reverse Stenvers)의 자세·CR로 옳은 것을 고르시오.",
     "options": [
       "① supine(AP)/좌위, 머리를 검사측 반대로 약 45° 회전",
@@ -3631,7 +3663,7 @@ const BANK = [
       "TMP-ARC-05"
     ],
     "exam": "TMP-ARC",
-    "part": "S9",
+    "part": "TEMP",
     "question": "Arcelin method의 묘출·Stenvers와의 차이로 옳은 것을 고르시오.",
     "options": [
       "① 묘출 구조는 Stenvers와 동일(petrous apex·labyrinth·IAC), AP로 표현된다",
@@ -3656,7 +3688,7 @@ const BANK = [
       "TMP-TOWNE-02"
     ],
     "exam": "TMP-TOWNE",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Towne method(AP axial)의 자세·CR로 옳은 것을 고르시오.",
     "options": [
       "① MSP⊥IP midline, OML⊥IP",
@@ -3684,7 +3716,7 @@ const BANK = [
       "TMP-TOWNE-04"
     ],
     "exam": "TMP-TOWNE",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Towne의 묘출·두개골 Towne과의 차이로 옳은 것을 고르시오.",
     "options": [
       "① SS = IAC·labyrinth·mastoid antrum·middle ear·dorsum sellae",
@@ -3710,7 +3742,7 @@ const BANK = [
       "TMP-HAAS-04"
     ],
     "exam": "TMP-HAAS",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Haas method의 중심·CR·변별로 옳은 것을 고르시오.",
     "options": [
       "① IP 중심 = nasion 위 1 inch superior",
@@ -3736,7 +3768,7 @@ const BANK = [
       "TMP-HAAS-03"
     ],
     "exam": "TMP-HAAS",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Haas method의 묘출구조로 옳은 것을 고르시오.",
     "options": [
       "① IAC·labyrinth·mastoid antrum·middle ear·dorsum sellae(Towne과 동일, PA로)",
@@ -3761,7 +3793,7 @@ const BANK = [
       "TMP-MAYER-03"
     ],
     "exam": "TMP-MAYER",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Mayer method(AP axial oblique)로 옳은 것을 고르시오.",
     "options": [
       "① CR이 dependent EAM 통과, 45° caudad",
@@ -3788,7 +3820,7 @@ const BANK = [
       "TMP-TORB-03"
     ],
     "exam": "TMP-TORB",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 PA axial transorbital projection으로 옳은 것을 고르시오.",
     "options": [
       "① CR을 nasion에 5° cephalad 또는 caudad(작은 각)로 준다",
@@ -3817,7 +3849,7 @@ const BANK = [
       "TMP-STY-04"
     ],
     "exam": "TMP-STY",
-    "part": "S9",
+    "part": "TEMP",
     "question": "붓돌기(styloid process) 촬영 3법으로 옳은 것을 고르시오.",
     "options": [
       "① Fuchs method = caudal 13°, open mouth, PA",
@@ -3842,7 +3874,7 @@ const BANK = [
       "TMP-HYP-01"
     ],
     "exam": "TMP-HYP",
-    "part": "S9",
+    "part": "TEMP",
     "question": "Hypoglossal canal(Miller method)의 촬영으로 옳은 것을 고르시오.",
     "options": [
       "① upside 45° oblique, caudal 12°, AP oblique",
@@ -4452,7 +4484,7 @@ const BANK = [
       "PNS-FUN-04"
     ],
     "exam": "PNS-FUN",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동(PNS)의 기능으로 옳은 것을 고르시오.",
     "options": [
       "① 흡입공기의 온도·습도 조절(폐 가스교환 효율↑)",
@@ -4478,7 +4510,7 @@ const BANK = [
       "PNS-CLIN-01"
     ],
     "exam": "PNS-CLIN",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 염증 발생 빈도 순서로 옳은 것을 고르시오.",
     "options": [
       "① Maxillary(최다) > Ethmoid > Frontal·Sphenoid(적음)",
@@ -4502,7 +4534,7 @@ const BANK = [
       "PNS-CLIN-03"
     ],
     "exam": "PNS-CLIN",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 치료·임상 트렌드로 옳은 것을 고르시오.",
     "options": [
       "① 세균성→항생제, 바이러스성→항히스타민+스프레이, 수술→내시경",
@@ -4527,7 +4559,7 @@ const BANK = [
       "PNS-CLIN-05"
     ],
     "exam": "PNS-CLIN",
-    "part": "S9",
+    "part": "SINUS",
     "question": "Waters view 임상 관찰로 옳은 것을 고르시오.",
     "options": [
       "① Maxillary 최적 / Frontal·Ethmoid 왜곡·단축 / Sphenoid 미관찰",
@@ -4553,7 +4585,7 @@ const BANK = [
       "PNS-CLIN-07"
     ],
     "exam": "PNS-CLIN",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 임상(blow-out·open-mouth Waters)으로 옳은 것을 고르시오.",
     "options": [
       "① Blow-out fracture: orbital floor 함몰→maxillary로, air-fluid level 동반(Waters 관찰)",
@@ -4580,7 +4612,7 @@ const BANK = [
       "PNS-CLIN-10"
     ],
     "exam": "PNS-CLIN",
-    "part": "S9",
+    "part": "SINUS",
     "question": "부비동 촬영 임상으로 옳은 것을 고르시오.",
     "options": [
       "① Caldwell은 Cone 사용으로 부비동 부위만(Skull PA와 촬영법 동일, 조사범위 차이)",
@@ -4607,7 +4639,7 @@ const BANK = [
       "EAR-02"
     ],
     "exam": "EAR",
-    "part": "S9",
+    "part": "TEMP",
     "question": "청각 경로로 옳은 것을 고르시오.",
     "options": [
       "① 고막 진동 → Malleus→Incus→Stapes → Cochlea → CN VIII → 뇌",
@@ -4633,7 +4665,7 @@ const BANK = [
       "EAR-06"
     ],
     "exam": "EAR",
-    "part": "S9",
+    "part": "TEMP",
     "question": "귀 해부·기능으로 옳은 것을 고르시오.",
     "options": [
       "① Semicircular canal=회전감각, Otolith=중력·수직 움직임, 둘 다 CN VIII",
@@ -4658,7 +4690,7 @@ const BANK = [
       "EAR-04"
     ],
     "exam": "EAR",
-    "part": "S9",
+    "part": "TEMP",
     "question": "소이골(귓속뼈) 영상에 관해 옳은 것을 고르시오.",
     "options": [
       "① 일반 X선으로 분별 불가 → Temporal CT(1mm 이하 thin slice) 필요",
@@ -4682,7 +4714,7 @@ const BANK = [
       "TMP-CLIN-02"
     ],
     "exam": "TMP-CLIN",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 임상·기술로 옳은 것을 고르시오.",
     "options": [
       "① Temporal SID = 100cm(확대·왜곡 최소)",
@@ -4708,7 +4740,7 @@ const BANK = [
       "TMP-CLIN-05"
     ],
     "exam": "TMP-CLIN",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 임상 보충으로 옳은 것을 고르시오.",
     "options": [
       "① Eagle's syndrome = styloid process가 비정상적으로 길어져 목 통증 → styloid 촬영법 개발",
@@ -4734,7 +4766,7 @@ const BANK = [
       "TMP-CLIN-06"
     ],
     "exam": "TMP-CLIN",
-    "part": "S9",
+    "part": "TEMP",
     "question": "측두골 Modified Law와 TMJ 촬영의 관계로 옳은 것을 고르시오.",
     "options": [
       "① 동일 원리, center만 다름(측두골=EAM 뒤 1inch / TMJ=EAM 전방 ½inch)",
@@ -4759,7 +4791,7 @@ const BANK = [
       "EXAM-02"
     ],
     "exam": "EXAM",
-    "part": "S9",
+    "part": "TEMP",
     "question": "시험 출제 범위·방식으로 옳은 것을 고르시오.",
     "options": [
       "① 기말 범위 = PNS + Temporal Bone 전체(중간 범위 포함 통합 출제 언급)",
@@ -4785,7 +4817,7 @@ const BANK = [
       "EXAM-05"
     ],
     "exam": "EXAM",
-    "part": "S9",
+    "part": "TEMP",
     "question": "시험 강조 포인트로 옳은 것을 고르시오.",
     "options": [
       "① Styloid 3법(Fuchs·Cahoon·Wigby-Taylor)은 이름 식별 위주, 세부 각도 출제 적음",
@@ -4814,6 +4846,24 @@ function load(){ try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } 
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 state.progress = state.progress || {};
 state.settings = Object.assign({ M: 2, batch: 10 }, state.settings || {});
+state.review = state.review || [];   // 표식의 방(수동 즐겨찾기 id 목록, 자동 제거 없음)
+
+// ── 단원 선택 ──
+const PART_ORDER = ["S2","S3","SINUS","TEMP"];
+const PART_LABELS = {
+  "S2":"스컬2 · 기준선·두개·Skull·Nasal·Zygoma",
+  "S3":"스컬3 · Rhese·Mandible·TMJ",
+  "SINUS":"스컬9 · 부비동(PNS)",
+  "TEMP":"스컬9 · 측두골(Temporal)"
+};
+// BANK에 실제 존재하는 단원만(순서 보존)
+const PARTS = PART_ORDER.filter(p => BANK.some(q => q.part === p));
+state.selectedParts = (state.selectedParts && state.selectedParts.filter(p => PARTS.includes(p))) || null;
+if (!state.selectedParts || !state.selectedParts.length) state.selectedParts = PARTS.slice();
+function selSet(){ return new Set(state.selectedParts); }
+function activeBank(){ const s = selSet(); const b = BANK.filter(q => s.has(q.part)); return b.length ? b : BANK; }
+function activeRegistry(){ const s = selSet(); const r = REGISTRY.filter(x => s.has(x.part)); return r.length ? r : REGISTRY; }
+function partsSummary(){ const n = state.selectedParts.length; if(n===PARTS.length) return "전체 단원"; if(n===1) return PART_LABELS[state.selectedParts[0]]; return PART_LABELS[state.selectedParts[0]]+` 외 ${n-1}`; }
 state.game = Object.assign({ xp:0, combo:0, bestCombo:0, totalCorrect:0, totalAnswered:0, badges:{} }, state.game || {});
 
 /* ===== 게임화 로직 ===== */
@@ -5018,22 +5068,25 @@ function renderBadges(){
   document.getElementById("badgeCount").textContent=`${n} / ${BADGES.length}`;
 }
 
-let queue = [], qi = 0, cur = null, shuf = null, batchPerfect = true;
+let queue = [], qi = 0, cur = null, shuf = null, batchPerfect = true, currentMode = "new";
 
-function show(id){ ["home","quiz","feedback","report","settings"].forEach(s => document.getElementById(s).classList.toggle("hidden", s !== id)); if(id==="home") renderHome(); if(id==="report") renderReport(); if(id==="settings") renderSettings(); }
+function show(id){ ["parts","home","quiz","feedback","report","settings","picker"].forEach(s => document.getElementById(s).classList.toggle("hidden", s !== id)); if(id==="parts") renderParts(); if(id==="home") renderHome(); if(id==="report") renderReport(); if(id==="settings") renderSettings(); if(id==="picker") renderPicker(); }
 
 function renderHome(){
-  const weak = QuizEngine.selectQueue(state.progress, BANK, "weak");
+  const AB = activeBank();
+  document.getElementById("reviewCount").textContent = state.review.length;
+  document.getElementById("homeParts").textContent = `${partsSummary()} · ${AB.length}문항`;
+  const weak = QuizEngine.selectQueue(state.progress, AB, "weak");
   document.getElementById("weakCount").textContent = weak.length + "마리";
   let mastered=0, seen=0;
-  BANK.forEach(q => { const p=state.progress[q.id]; if(p&&p.seen){seen++; if(p.mastered)mastered++;} });
-  const total=BANK.length, learning=seen-mastered, unseen=total-seen;
+  AB.forEach(q => { const p=state.progress[q.id]; if(p&&p.seen){seen++; if(p.mastered)mastered++;} });
+  const total=AB.length, learning=seen-mastered, unseen=total-seen;
   document.getElementById("progBar").innerHTML =
     `<span style="width:${pct(mastered,total)}%;background:var(--ok)"></span>`+
     `<span style="width:${pct(learning,total)}%;background:var(--miss)"></span>`+
     `<span style="width:${pct(unseen,total)}%;background:#e9e9e9"></span>`;
   document.getElementById("progText").textContent = `🎖️ 토벌 ${mastered} · ⚔️ 교전중 ${learning} · 🌑 미발견 ${unseen} / 총 ${total}마리`;
-  const cov = QuizEngine.computeCoverage(BANK, REGISTRY);
+  const cov = QuizEngine.computeCoverage(AB, activeRegistry());
   document.getElementById("covText").textContent = `${cov.covered.length} / ${cov.total} ID`;
   document.getElementById("covBar").innerHTML = `<span style="width:${pct(cov.covered.length,cov.total)}%;background:var(--accent)"></span>`;
   renderHud();
@@ -5041,9 +5094,105 @@ function renderHome(){
 }
 function pct(n,d){ return d? Math.round(n/d*100):0; }
 
+// ── 단원 선택 화면 ──
+const ISLAND_NAME = {S2:"두개·안면·Nasal·Zygoma",S3:"턱·TMJ",SINUS:"부비동",TEMP:"측두골·귀"};
+const PART_NUM = {S2:"스컬2",S3:"스컬3",SINUS:"스컬9 부비동",TEMP:"스컬9 측두골"};
+function renderParts(){
+  const sel = selSet();
+  document.getElementById("partsCount").textContent = `${state.selectedParts.length} / ${PARTS.length} 섬`;
+  const cols = 4, W = 340, cw = W/cols, r = 36, top = 64, rowH = 122;
+  const pos = PARTS.map((p,i) => {
+    const row = Math.floor(i/cols);
+    let col = i%cols;
+    if(row%2===1) col = cols-1-col;           // 지그재그 S자(아래줄 우→좌)
+    return { p, i, x: cw*col + cw/2, y: top + row*rowH };
+  });
+  const rows = Math.ceil(PARTS.length/cols);
+  const H = top + (rows-1)*rowH + r + 44;
+  let route = "";
+  pos.forEach((c,i) => {
+    if(i===0){ route = `M ${c.x} ${c.y}`; return; }
+    const pv = pos[i-1], mx = (pv.x+c.x)/2, my = (pv.y+c.y)/2;
+    route += ` C ${mx} ${pv.y}, ${mx} ${c.y}, ${c.x} ${c.y}`;
+  });
+  const islands = pos.map(c => {
+    const p = c.p, on = sel.has(p);
+    const cnt = BANK.filter(q => q.part === p).length;
+    const mastered = BANK.filter(q => q.part === p && (state.progress[q.id]||{}).mastered).length;
+    const done = cnt && mastered === cnt;
+    return `<g onclick="togglePart('${p}')" style="cursor:pointer">
+      ${on?`<ellipse cx="${c.x}" cy="${c.y+r-6}" rx="${r-7}" ry="6" fill="#e8b740" opacity=".4"/>`:''}
+      <image href="islands/${p}.png" x="${c.x-r}" y="${c.y-r}" width="${2*r}" height="${2*r}" style="${on?'filter:drop-shadow(0 0 8px #ffe08a)':'opacity:.45'}"/>
+      ${on?`<text x="${c.x+r-14}" y="${c.y-r+17}" font-size="17">🚩</text>`:''}
+      ${done?`<text x="${c.x-r+2}" y="${c.y-r+17}" font-size="14">⭐</text>`:''}
+      <text x="${c.x}" y="${c.y+r+11}" text-anchor="middle" font-size="10" fill="${on?'#ffe9b0':'#9fb6c2'}" font-weight="800">${PART_NUM[p]||p}</text>
+      <text x="${c.x}" y="${c.y+r+22}" text-anchor="middle" font-size="8.5" fill="#bcd">${ISLAND_NAME[p]||p}</text>
+    </g>`;
+  }).join("");
+  document.getElementById("partsGrid").innerHTML =
+    `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:480px;display:block;margin:2px auto">
+      <path d="${route}" fill="none" stroke="#6a9ab0" stroke-width="2" stroke-dasharray="5 6" opacity=".55"/>
+      ${islands}
+    </svg>`;
+}
+function togglePart(p){
+  const i = state.selectedParts.indexOf(p);
+  if(i>=0) state.selectedParts.splice(i,1); else state.selectedParts.push(p);
+  // 순서 정렬 보존
+  state.selectedParts = PARTS.filter(x => state.selectedParts.includes(x));
+  renderParts();
+}
+function toggleAllParts(){
+  state.selectedParts = (state.selectedParts.length === PARTS.length) ? [] : PARTS.slice();
+  renderParts();
+}
+function confirmParts(){
+  if(!state.selectedParts.length){ alert("최소 한 단원은 선택하세요."); return; }
+  save(); show("home");
+}
+
+function toggleReview(){
+  if(!cur) return;
+  const i = state.review.indexOf(cur.id);
+  if(i>=0) state.review.splice(i,1); else state.review.push(cur.id);
+  save(); renderReviewBtn();
+}
+function renderReviewBtn(){
+  const b=document.getElementById("reviewToggle"); if(!b||!cur) return;
+  const on = state.review.includes(cur.id);
+  b.textContent = on ? "🔖 표식됨 ✓" : "🔖 표식";
+  b.style.background = on ? "var(--gold-dk)" : "none";
+  b.style.fontWeight = on ? "700" : "400";
+}
+
+function shuffleIds(ids){ const a=ids.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function renderPicker(){
+  const ab = activeBank();
+  document.getElementById("pickerList").innerHTML = ab.length ? ab.map((q,idx)=>{
+    const pr = state.progress[q.id] || {};
+    const mark = pr.mastered ? "⭐" : (pr.seen ? ((pr.wrongCount && (pr.streak||0)===0) ? "❌" : "✓") : "·");
+    return `<div class="opt" style="cursor:pointer;margin:5px 0" onclick="playFrom(${idx})"><b>${mark} ${idx+1}.</b> <span class="muted">[${q.exam||q.part}]</span> ${(q.question||"").slice(0,40)}…</div>`;
+  }).join("") : "<span class='muted'>선택한 섬에 문제가 없습니다. 단원을 먼저 고르세요.</span>";
+}
+function playFrom(idx){
+  const ids = activeBank().map(q=>q.id);
+  if(!ids.length) return;
+  currentMode = "all"; queue = ids; qi = idx; batchPerfect = true; ac(); show("quiz"); renderQuestion();
+}
+
 function startMode(mode){
-  queue = QuizEngine.selectQueue(state.progress, BANK, mode, state.settings.batch);
-  if(!queue.length){ alert(mode==="weak"?"토벌할 몬스터가 없습니다! 새 던전에 입장하세요.":"입장 가능한 던전이 없습니다."); return; }
+  currentMode = mode;
+  if(mode==="review"){
+    const ids = new Set(BANK.map(q=>q.id));
+    queue = state.review.filter(id=>ids.has(id));
+    if(!queue.length){ alert("🔖 표식을 남긴 몬스터가 없습니다.\n문제를 풀 때 '🔖 표식' 버튼으로 표식하세요."); return; }
+  } else if(mode==="all"){
+    queue = shuffleIds(activeBank().map(q=>q.id));
+    if(!queue.length){ alert("선택한 섬에 문제가 없습니다. 단원을 먼저 고르세요."); return; }
+  } else {
+    queue = QuizEngine.selectQueue(state.progress, activeBank(), mode, state.settings.batch);
+    if(!queue.length){ alert(mode==="weak" ? "토벌할 몬스터가 없습니다! 새 던전에 입장하세요." : "이 섬의 새 문제를 모두 풀었습니다!\n'🔄 전체 복습'으로 다시 풀거나 '📋 문제 목록'에서 골라 푸세요."); return; }
+  }
   qi = 0; batchPerfect = true; ac(); show("quiz"); renderQuestion();
 }
 
@@ -5067,6 +5216,7 @@ function renderQuestion(){
     d.onclick=()=>d.classList.toggle("sel");
     box.appendChild(d);
   });
+  renderReviewBtn();
   show("quiz");
 }
 
@@ -5129,8 +5279,10 @@ function renderFeedback(g, sel, gr){
 function next(){
   qi++;
   if(qi>=queue.length){
+    if(currentMode==="review"){ alert("🔖 표식의 방 한 바퀴 완료! 마을로 귀환합니다."); show("home"); return; }
+    if(currentMode==="all"){ alert("🔄 복습 한 바퀴 완료! 마을로 귀환합니다."); show("home"); return; }
     // 약점/무한 모드는 남은 약점 다시 큐잉
-    const remaining = QuizEngine.selectQueue(state.progress, BANK, "weak");
+    const remaining = QuizEngine.selectQueue(state.progress, activeBank(), "weak");
     if(remaining.length && queue.some(id=>remaining.includes(id))){ queue=remaining; qi=0; renderQuestion(); return; }
     // 묶음 전부 정답 → 완벽주의 배지
     if(batchPerfect && queue.length>=3){ const got=checkBadges(true, levelFromXp(state.game.xp)); save(); got.forEach((id,i)=>setTimeout(()=>showToast(id),200+i*300)); if(got.length) burstConfetti(140); }
@@ -5155,7 +5307,7 @@ function exportProgress(){ const blob=new Blob([JSON.stringify({progress:state.p
 function importProgress(ev){ const f=ev.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d.progress)state.progress=d.progress; if(d.settings)state.settings=Object.assign(state.settings,d.settings); if(d.game)state.game=Object.assign(state.game,d.game); save(); alert("가져오기 완료"); show("home"); }catch(e){ alert("파일 오류"); } }; r.readAsText(f); }
 function resetProgress(){ state.progress={}; state.game={ xp:0, combo:0, bestCombo:0, totalCorrect:0, totalAnswered:0, badges:{} }; save(); show("home"); }
 
-show("home");
+show("parts");
 </script>
 </body>
 </html>
